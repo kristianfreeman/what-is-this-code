@@ -1,6 +1,7 @@
-name = "what-is-this-code"
+name = "sql-explainer"
 main = "src/worker.ts"
 compatibility_date = "2024-01-02"
+account_id = "95e065d2e3f97a1e50bae58aea71df6d"
 
 [ai]
 binding = "AI"

@@ -20,8 +20,7 @@ app.post("/process", async c => {
   const ai = new Ai(c.env.AI);
 
   const systemMessage = 'Answer the following question by the user'
-  const content = `Here is the schema for the database:
-
+  const schema = `
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE [Genre]
@@ -30,18 +29,26 @@ CREATE TABLE [Genre]
     [Name] NVARCHAR(120),
     CONSTRAINT [PK_Genre] PRIMARY KEY  ([GenreId])
 );
-
-${code}
   `
 
-  const messages = [
-    { role: 'system', content: systemMessage },
-    { role: 'user', content }
-  ];
+  const prompt = `
+### Task
+Generate a SQL query to answer [QUESTION]${code}[/QUESTION]
 
+### Database Schema
+The query will run on a database with the following schema:
+${schema}
+
+### Answer
+Given the database schema, here is the SQL query that [QUESTION]{user_question}[/QUESTION]
+[SQL]
+  `
   try {
-    const { response } = await ai.run('@cf/defog/sqlcoder-7b-2', { messages });
-    return c.json({ response, success: true });
+    const { response } = await ai.run('@cf/defog/sqlcoder-7b-2', { 
+      prompt,
+      raw: true
+    });
+    return c.json({ prompt, response, success: true });
   } catch (err: any) {
     return c.json({ error: err.toString(), success: false })
   }
